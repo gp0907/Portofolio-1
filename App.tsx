@@ -57,6 +57,7 @@ function App() {
   const items = useMemo(() => flattenData(), []);
   const lenisRef = useRef<Lenis | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   // Initialize Lenis
   useEffect(() => {
@@ -78,6 +79,10 @@ function App() {
     }
 
     const animationFrameId = requestAnimationFrame(raf);
+    
+    // Simulate load for smooth entry
+    setTimeout(() => setIsLoaded(true), 100);
+
     return () => {
       cancelAnimationFrame(animationFrameId);
       lenis.destroy();
@@ -90,9 +95,6 @@ function App() {
   const worldRotationY = -currentItemIndexFloat * ANGLE_PER_ITEM;
   const worldTranslateZ = -RADIUS; 
 
-  // Vertical Center Offset:
-  // Using 0.45 instead of 0.5 moves the "center" point slightly higher on the screen (45% from top).
-  // This helps lift the content so it feels more vertically centered to the eye, not "down side".
   const verticalCenterOffset = typeof window !== 'undefined' ? window.innerHeight * 0.45 : 0;
 
   const handleCopyEmail = (email: string) => {
@@ -102,7 +104,7 @@ function App() {
   };
 
   return (
-    <>
+    <div className={`transition-opacity duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <CanvasBackground />
       
       {/* Ghost Scroll Container */}
@@ -133,7 +135,6 @@ function App() {
             const distance = Math.abs(scrollProgress - itemScrollY);
             
             // "Sudden Appearance" Logic
-            // The item is visible if it's within a close range of the focal point
             const isVisible = distance < SPACING * 0.55;
             
             // Opacity: Sharp falloff
@@ -152,11 +153,6 @@ function App() {
                   pointerEvents: opacity > 0.9 ? 'auto' : 'none',
                 }}
               >
-                {/* 
-                    Wrapper div styles:
-                    If opacity > 0.9 (active), full blur removed.
-                    If opacity < 0.9 (next/prev), blur applied.
-                */}
                 <div className={`
                   w-full h-full 
                   flex flex-col justify-center relative overflow-hidden
@@ -164,7 +160,7 @@ function App() {
                   ${opacity > 0.9 ? 'blur-0' : 'blur-sm grayscale opacity-50'}
                 `}>
                    
-                   {/* Card Content Container - Only styled for non-Title cards */}
+                   {/* Card Content Container */}
                    {item.type !== 'SECTION_TITLE' && item.type !== 'HERO' ? (
                      <div className="bg-[#0a0a0a] border border-[#222] shadow-2xl p-6 md:p-12 h-auto max-h-full w-full relative">
                          
@@ -351,7 +347,7 @@ function App() {
           })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
